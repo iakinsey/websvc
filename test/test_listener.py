@@ -10,6 +10,7 @@ from websvc.service import Service, service, public
 SERVICE_A_RESP = 1
 SERVICE_B_RESP = 2
 
+
 class ServiceA(Service):
     service_b = service("ServiceB")
 
@@ -49,10 +50,11 @@ class TestListener:
         url_a = "{}/{}/call_b".format(url, "ServiceA")
         url_b = "{}/{}/call_a".format(url, "ServiceB")
         process = Process(target=self.run_server)
+        data = bytes(dumps({"arg": SERVICE_A_RESP}), encoding='utf-8')
 
         try:
             process.start()
-            data = bytes(dumps({"arg": SERVICE_A_RESP}), encoding='utf-8')
+
             assert loads(urlopen(url_a, data).read())['data'] == SERVICE_A_RESP
             assert loads(urlopen(url_b).read())['data'] == SERVICE_B_RESP
 
