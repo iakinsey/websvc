@@ -53,11 +53,11 @@ class Request:
         if length == 0:
             return {}
 
-        body = environ['wsgi.input'].read(length)
+        body = self.environ['wsgi.input'].read(length)
 
         try:
             # TODO check argument spec
-            return json.loads(body)
+            return loads(body)
         except JSONDecodeError:
             # TODO change this exception to something more appropriate.
             raise ValueError()

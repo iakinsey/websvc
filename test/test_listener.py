@@ -1,4 +1,4 @@
-from json import loads
+from json import loads, dumps
 from multiprocessing import Process
 from os import kill
 from urllib.request import urlopen
@@ -10,13 +10,12 @@ from websvc.service import Service, service, public
 SERVICE_A_RESP = 1
 SERVICE_B_RESP = 2
 
-
 class ServiceA(Service):
     service_b = service("ServiceB")
 
     @public
-    def call_b(self):
-        return self.service_b.get()
+    def call_b(self, arg):
+        return self.service_b.get(arg)
 
     def get(self):
         return SERVICE_B_RESP
@@ -29,8 +28,8 @@ class ServiceB(Service):
     def call_a(self):
         return self.service_a.get()
 
-    def get(self):
-        return SERVICE_A_RESP
+    def get(self, arg):
+        return arg
 
 
 class TestListener:
@@ -53,8 +52,8 @@ class TestListener:
 
         try:
             process.start()
-
-            assert loads(urlopen(url_a).read())['data'] == SERVICE_A_RESP
+            data = bytes(dumps({"arg": SERVICE_A_RESP}), encoding='utf-8')
+            assert loads(urlopen(url_a, data).read())['data'] == SERVICE_A_RESP
             assert loads(urlopen(url_b).read())['data'] == SERVICE_B_RESP
 
             process.terminate()
