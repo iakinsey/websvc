@@ -15,7 +15,7 @@ class ServiceA(Service):
     service_b = service("ServiceB")
 
     @public
-    def call_b(self, arg):
+    def call_b(self, arg, a1=2):
         return self.service_b.get(arg)
 
     def get(self):

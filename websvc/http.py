@@ -5,14 +5,15 @@ patch_all()
 
 
 from cgi import FieldStorage
+from functools import wraps
+from gevent.wsgi import WSGIServer
+from inspect import getargspec
 from json import dumps, loads
 from json.decoder import JSONDecodeError
+from os import mkdir, listdir
 from sys import argv
 from traceback import print_exc
-from gevent.wsgi import WSGIServer
-from os import mkdir, listdir
 from urllib.parse import parse_qs
-
 
 OPTIONS = """Usage:
   run [host] [port]"""
@@ -20,6 +21,30 @@ OPTIONS = """Usage:
 
 class RequestFailure(Exception):
     pass
+
+
+def validate_arguments(fn):
+    argspec = getargspec(fn)
+    desired_args = argspec.args
+
+    if argspec.defaults:
+        desired_args = argspec.args[:-len(argspec.defaults)]
+
+    desired_args = set(desired_args[1:])
+
+    @wraps(fn)
+    def func(arguments):
+        difference = desired_args.difference(arguments)
+
+        if difference:
+            raise ValueError("Missing keys: {}".format(difference))
+
+        return fn(**arguments)
+
+    return func
+
+def wrap_url_mapping(url_mapping):
+    return {url: validate_arguments(fn) for url, fn in url_mapping.items()}
 
 
 class Request:
@@ -35,7 +60,7 @@ class Request:
     def __init__(self, url_mapping, environ, start_response):
         self.environ = environ
         self.start_response = start_response
-        self.url_mapping = url_mapping
+        self.url_mapping = wrap_url_mapping(url_mapping)
         self.response = {'success': False}
         self.code = None
         self.method = self.environ['REQUEST_METHOD']
@@ -56,7 +81,6 @@ class Request:
         body = self.environ['wsgi.input'].read(length)
 
         try:
-            # TODO check argument spec
             return loads(body)
         except JSONDecodeError:
             # TODO change this exception to something more appropriate.
@@ -71,7 +95,7 @@ class Request:
             if not fn:
                 self.code = 404
             else:
-                self.response['data'] = fn(**arguments)
+                self.response['data'] = fn(arguments)
                 self.response['success'] = True
                 self.code = 200
         except RequestFailure as e:
