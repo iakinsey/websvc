@@ -1,9 +1,3 @@
-from gevent.monkey import patch_all
-
-
-patch_all()
-
-
 from cgi import FieldStorage
 from functools import wraps
 from gevent.wsgi import WSGIServer

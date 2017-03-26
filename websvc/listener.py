@@ -1,6 +1,10 @@
+from gevent.monkey import patch_all
 from gevent.wsgi import WSGIServer
 from logging import info
 from websvc.http import Request
+
+
+patch_all(thread=False)
 
 
 class Listener:

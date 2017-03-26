@@ -26,7 +26,7 @@ class ServiceB(Service):
     service_a = service("ServiceA")
 
     @public
-    def call_a(self):
+    def call_a(self, **kwargs):
         return self.service_a.get()
 
     def get(self, arg):
