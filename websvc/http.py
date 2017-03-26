@@ -55,9 +55,8 @@ class Request:
         ('Access-Control-Allow-Credentials', 'true'),
         ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
         ('Access-Control-Allow-Headers', 'Content-Type, Authorization'),
-        ('Access-Control-Max-Age', 1728000),
+        ('Access-Control-Max-Age', '1728000'),
         ('Content-Type', 'text/plain charset=UTF-8'),
-        ('Content-Length', 0)
     ]
 
     def __init__(self, url_mapping, options, environ, start_response):
