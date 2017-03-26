@@ -92,7 +92,7 @@ class Request:
                 self.response['data'] = fn(arguments)
                 self.response['success'] = True
         except ServiceError as e:
-            self.response['error'] = e[0]
+            self.response['error'] = e.args[0]
             self.response['code'] = e.code
             self.code = 400
         except:
