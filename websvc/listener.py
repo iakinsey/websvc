@@ -39,7 +39,8 @@ class WebListener(Listener):
                 self.url_mapping[url] = attr
 
     def application(self, environ, start_response):
-        request = Request(self.url_mapping, environ, start_response)
+        request = Request(self.url_mapping, self.options, environ,
+                          start_response)
 
         return request.perform()
 

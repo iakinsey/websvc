@@ -49,16 +49,28 @@ class Request:
         500: "500 Internal Server Error"
     }
 
-    def __init__(self, url_mapping, environ, start_response):
+    force_allow_headers = [
+        ('Access-Control-Allow-Origin', '*'),
+        ('Access-Control-Allow-Credentials', 'true'),
+        ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
+        ('Access-Control-Allow-Headers', 'Content-Type, Authorization'),
+        ('Access-Control-Max-Age', 1728000),
+        ('Content-Type', 'text/plain charset=UTF-8'),
+        ('Content-Length', 0)
+    ]
+
+    def __init__(self, url_mapping, options, environ, start_response):
         self.environ = environ
         self.start_response = start_response
         self.url_mapping = wrap_url_mapping(url_mapping)
         self.response = {'success': False}
         self.code = None
+        self.options = options
+        self.debug = self.options.get('debug')
         self.method = self.environ['REQUEST_METHOD']
+        self.indicate_allow_all = self.debug and self.method == 'OPTIONS'
         self.headers = [
             ('Content-Type', 'text/plain; charset={}'.format(self.encoding)),
-            ('Access-Control-Allow-Origin', '*')
         ]
 
     def get_arguments(self):
@@ -82,15 +94,19 @@ class Request:
         self.code = 200
 
         try:
-            path = self.environ['PATH_INFO'].strip('/')
-            fn = self.url_mapping.get(path)
-            arguments = self.get_arguments()
-
-            if not fn:
-                self.code = 404
+            if self.indicate_allow_all:
+                self.code = 204
+                self.headers.extend(self.force_allow_headers)
             else:
-                self.response['data'] = fn(arguments)
-                self.response['success'] = True
+                path = self.environ['PATH_INFO'].strip('/')
+                fn = self.url_mapping.get(path)
+                arguments = self.get_arguments()
+
+                if not fn:
+                    self.code = 404
+                else:
+                    self.response['data'] = fn(arguments)
+                    self.response['success'] = True
         except ServiceError as e:
             self.response['error'] = e.args[0]
             self.response['code'] = e.code
@@ -108,8 +124,12 @@ class Request:
         self.response['http'] = self.code
         self.start_response(formal_code, self.headers)
 
-        json_data = dumps(self.response)
-        payload = bytes(json_data, encoding=self.encoding)
+        if self.indicate_allow_all:
+            payload = ''
+        else:
+            json_data = dumps(self.response)
+            payload = bytes(json_data, encoding=self.encoding)
+
         self.headers.append(("Content-Length", len(payload)))
 
         return [payload]
