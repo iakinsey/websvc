@@ -103,12 +103,6 @@ class Request:
             return self.respond()
 
     def respond(self):
-        if self.code is None:
-            if self.response['success']:
-                self.code = 200
-            else:
-                self.code = 500
-
         formal_code = self.code_map[self.code]
         self.response['http'] = self.code
         self.start_response(formal_code, self.headers)
