@@ -123,7 +123,7 @@ class Request:
         formal_code = self.code_map[self.code]
         self.response['http'] = self.code
 
-        if self.debug:
+        if self.debug and not self.indicate_allow_all:
             self.headers.append(self.force_allow_headers[0])
 
         self.start_response(formal_code, self.headers)
