@@ -79,6 +79,8 @@ class Request:
             raise ValueError()
 
     def perform(self):
+        self.code = 200
+
         try:
             path = self.environ['PATH_INFO'].strip('/')
             fn = self.url_mapping.get(path)
@@ -89,7 +91,6 @@ class Request:
             else:
                 self.response['data'] = fn(arguments)
                 self.response['success'] = True
-                self.code = 200
         except ServiceError as e:
             self.response['error'] = e[0]
             self.response['code'] = e.code
