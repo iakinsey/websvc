@@ -52,11 +52,6 @@ class Request:
 
     force_allow_headers = [
         ('Access-Control-Allow-Origin', '*'),
-        ('Access-Control-Allow-Credentials', 'true'),
-        ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
-        ('Access-Control-Allow-Headers', 'Content-Type, Authorization'),
-        ('Access-Control-Max-Age', '1728000'),
-        ('Content-Type', 'text/plain charset=UTF-8'),
     ]
 
     def __init__(self, url_mapping, options, environ, start_response):
@@ -96,7 +91,6 @@ class Request:
         try:
             if self.indicate_allow_all:
                 self.code = 204
-                self.headers.extend(self.force_allow_headers)
             else:
                 path = self.environ['PATH_INFO'].strip('/')
                 fn = self.url_mapping.get(path)
@@ -123,7 +117,7 @@ class Request:
         formal_code = self.code_map[self.code]
         self.response['http'] = self.code
 
-        if self.debug and not self.indicate_allow_all:
+        if self.debug:
             self.headers.append(self.force_allow_headers[0])
 
         self.start_response(formal_code, self.headers)
