@@ -7,14 +7,12 @@ from json.decoder import JSONDecodeError
 from os import mkdir, listdir
 from sys import argv
 from traceback import print_exc
+from websvc.error import ServiceError
 from urllib.parse import parse_qs
+
 
 OPTIONS = """Usage:
   run [host] [port]"""
-
-
-class RequestFailure(Exception):
-    pass
 
 
 def validate_arguments(fn):
@@ -92,11 +90,15 @@ class Request:
                 self.response['data'] = fn(arguments)
                 self.response['success'] = True
                 self.code = 200
-        except RequestFailure as e:
-            self.response['error'], self.code = e.args
+        except ServiceError as e:
+            self.response['error'] = e[0]
+            self.response['code'] = e.code
+            self.code = 400
         except:
             print_exc()
             self.code = 500
+            self.response['error'] = "Internal server error"
+            self.response['code'] = 0
         finally:
             return self.respond()
 
@@ -116,6 +118,3 @@ class Request:
         self.headers.append(("Content-Length", len(payload)))
 
         return [payload]
-
-    def fail(self, reason, code=400):
-        raise RequestFailure(reason, code)
