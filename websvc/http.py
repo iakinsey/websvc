@@ -43,6 +43,7 @@ class Request:
     encoding = "utf-8"
     code_map = {
         200: "200 OK",
+        204: "204 No Content",
         400: "400 Bad Request",
         404: "404 Not Found",
         405: "405 Method not allowed",
