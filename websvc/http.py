@@ -52,7 +52,14 @@ class Request:
 
     force_allow_headers = [
         ('Access-Control-Allow-Origin', '*'),
+        ('Access-Control-Allow-Headers', 'Content-Type, Authorization'),
+        ('Access-Control-Allow-Credentials', 'true'),
+        ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
+        ('Access-Control-Allow-Headers', 'Content-Type, Authorization'),
+        ('Access-Control-Max-Age', '1728000')
     ]
+
+    json_content_type_header = ("Content-Type", "application/json")
 
     def __init__(self, url_mapping, options, environ, start_response):
         self.environ = environ
@@ -118,13 +125,14 @@ class Request:
         self.response['http'] = self.code
 
         if self.debug:
-            self.headers.append(self.force_allow_headers[0])
+            self.headers.extend(self.force_allow_headers)
 
         self.start_response(formal_code, self.headers)
 
         if self.indicate_allow_all:
             payload = ''
         else:
+            self.headers.append(self.json_content_type_header)
             json_data = dumps(self.response)
             payload = bytes(json_data, encoding=self.encoding)
 
