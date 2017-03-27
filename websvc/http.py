@@ -55,7 +55,6 @@ class Request:
         ('Access-Control-Allow-Headers', 'Content-Type, Authorization'),
         ('Access-Control-Allow-Credentials', 'true'),
         ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
-        ('Access-Control-Allow-Headers', 'Content-Type, Authorization'),
         ('Access-Control-Max-Age', '1728000')
     ]
 
